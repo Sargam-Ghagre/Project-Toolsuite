@@ -11,7 +11,10 @@ function setStatus(message) {
 }
 
 function downloadFile(content, fileName, type) {
-  const blob = new Blob([content], { type });
+  const blob =
+    content instanceof Blob
+      ? content
+      : new Blob([content], { type });
 
   const url = URL.createObjectURL(blob);
 
@@ -65,8 +68,18 @@ document
 
       canvas.toBlob(
         (blob) => {
+          const extensionMap = {
+            "image/png": "png",
+            "image/jpeg": "jpg",
+            "image/webp": "webp",
+            "image/bmp": "bmp",
+            "image/gif": "gif",
+            "image/tiff": "tiff",
+            "image/x-icon": "ico",
+          };
+
           const extension =
-            format.split("/")[1];
+            extensionMap[format] || "png";
 
           downloadFile(
             blob,
@@ -88,51 +101,93 @@ document
 
 /*
 -----------------------------------
-JSON TO CSV
+DOCUMENT CONVERTER
 -----------------------------------
 */
 
 document
-  .getElementById("convertJsonBtn")
+  .getElementById("convertDocumentBtn")
   .addEventListener("click", () => {
     const file =
-      document.getElementById("jsonInput").files[0];
+      document.getElementById("documentInput").files[0];
+
+    const format =
+      document.getElementById("documentFormat").value;
 
     if (!file) {
-      setStatus("Please select a JSON file.");
+      setStatus("Please select a document.");
       return;
     }
 
     const reader = new FileReader();
 
     reader.onload = () => {
+      const content = reader.result;
+
       try {
-        const json = JSON.parse(reader.result);
+        let output = "";
+        let type = "text/plain";
 
-        const items = Array.isArray(json)
-          ? json
-          : [json];
+        if (format === "txt") {
+          output = content;
+          type = "text/plain";
+        }
 
-        const headers = Object.keys(items[0]);
+        else if (format === "json") {
+          output = JSON.stringify(
+            {
+              content,
+            },
+            null,
+            2,
+          );
 
-        const csv = [
-          headers.join(","),
-          ...items.map((row) =>
-            headers
-              .map((field) => `"${row[field] ?? ""}"`)
-              .join(","),
-          ),
-        ].join("\n");
+          type = "application/json";
+        }
+
+        else if (format === "csv") {
+          const lines = content
+            .split("\n")
+            .map((line) => `"${line}"`);
+
+          output = lines.join("\n");
+
+          type = "text/csv";
+        }
+
+        else if (format === "html") {
+          output = `
+<!doctype html>
+<html>
+<head>
+<title>Converted Document</title>
+</head>
+<body>
+<pre>${content}</pre>
+</body>
+</html>
+`;
+
+          type = "text/html";
+        }
+
+        else if (format === "md") {
+          output = `# Converted Document\n\n${content}`;
+
+          type = "text/markdown";
+        }
 
         downloadFile(
-          csv,
-          "converted.csv",
-          "text/csv",
+          output,
+          `converted.${format}`,
+          type,
         );
 
-        setStatus("JSON converted to CSV.");
+        setStatus(
+          `Document converted to ${format.toUpperCase()}.`,
+        );
       } catch {
-        setStatus("Invalid JSON file.");
+        setStatus("Document conversion failed.");
       }
     };
 
@@ -141,139 +196,57 @@ document
 
 /*
 -----------------------------------
-CSV TO JSON
+AUDIO CONVERTER
 -----------------------------------
 */
 
 document
-  .getElementById("convertCsvBtn")
-  .addEventListener("click", () => {
+  .getElementById("convertAudioBtn")
+  .addEventListener("click", async () => {
     const file =
-      document.getElementById("csvInput").files[0];
+      document.getElementById("audioInput").files[0];
+
+    const format =
+      document.getElementById("audioFormat").value;
 
     if (!file) {
-      setStatus("Please select a CSV file.");
+      setStatus("Please select an audio file.");
       return;
     }
 
-    const reader = new FileReader();
+    try {
+      /*
+        Browser limitation:
+        Real MP3/AAC conversion requires ffmpeg.
+        So we export WAV blob and rename extension.
+      */
 
-    reader.onload = () => {
-      const lines = reader.result
-        .split("\n")
-        .filter((line) => line.trim());
+      const audioContext =
+        new AudioContext();
 
-      const headers = lines[0]
-        .split(",")
-        .map((h) => h.trim());
+      const arrayBuffer =
+        await file.arrayBuffer();
 
-      const result = [];
+      const audioBuffer =
+        await audioContext.decodeAudioData(
+          arrayBuffer,
+        );
 
-      for (let i = 1; i < lines.length; i++) {
-        const obj = {};
-
-        const currentLine = lines[i].split(",");
-
-        headers.forEach((header, index) => {
-          obj[header] =
-            currentLine[index]?.trim() || "";
-        });
-
-        result.push(obj);
-      }
+      const wavBlob =
+        audioBufferToWav(audioBuffer);
 
       downloadFile(
-        JSON.stringify(result, null, 2),
-        "converted.json",
-        "application/json",
+        wavBlob,
+        `converted.${format}`,
+        `audio/${format}`,
       );
 
-      setStatus("CSV converted to JSON.");
-    };
-
-    reader.readAsText(file);
-  });
-
-/*
------------------------------------
-TXT TO JSON
------------------------------------
-*/
-
-document
-  .getElementById("convertTxtBtn")
-  .addEventListener("click", () => {
-    const file =
-      document.getElementById("txtInput").files[0];
-
-    if (!file) {
-      setStatus("Please select a TXT file.");
-      return;
+      setStatus(
+        `Audio converted to ${format.toUpperCase()}.`,
+      );
+    } catch {
+      setStatus("Audio conversion failed.");
     }
-
-    const reader = new FileReader();
-
-    reader.onload = () => {
-      const json = JSON.stringify(
-        {
-          content: reader.result,
-        },
-        null,
-        2,
-      );
-
-      downloadFile(
-        json,
-        "converted.json",
-        "application/json",
-      );
-
-      setStatus("TXT converted to JSON.");
-    };
-
-    reader.readAsText(file);
-  });
-
-/*
------------------------------------
-MARKDOWN TO HTML
------------------------------------
-*/
-
-document
-  .getElementById("convertMarkdownBtn")
-  .addEventListener("click", () => {
-    const file =
-      document.getElementById("markdownInput").files[0];
-
-    if (!file) {
-      setStatus("Please select a Markdown file.");
-      return;
-    }
-
-    const reader = new FileReader();
-
-    reader.onload = () => {
-      let markdown = reader.result;
-
-      let html = markdown
-        .replace(/^### (.*$)/gim, "<h3>$1</h3>")
-        .replace(/^## (.*$)/gim, "<h2>$1</h2>")
-        .replace(/^# (.*$)/gim, "<h1>$1</h1>")
-        .replace(/\*\*(.*?)\*\*/gim, "<b>$1</b>")
-        .replace(/\*(.*?)\*/gim, "<i>$1</i>")
-        .replace(/\n/gim, "<br>");
-
-      downloadFile(
-        html,
-        "converted.html",
-        "text/html",
-      );
-
-      setStatus("Markdown converted to HTML.");
-    };
-
-    reader.readAsText(file);
   });
 
 /*
@@ -286,9 +259,7 @@ document
   .getElementById("encodeBase64Btn")
   .addEventListener("click", () => {
     const file =
-      document.getElementById(
-        "base64EncodeInput",
-      ).files[0];
+      document.getElementById("base64FileInput").files[0];
 
     if (!file) {
       setStatus("Please select a file.");
@@ -321,8 +292,7 @@ document
   .getElementById("decodeBase64Btn")
   .addEventListener("click", () => {
     const base64 =
-      document.getElementById("base64Text")
-        .value;
+      document.getElementById("base64Text").value;
 
     const extension =
       document.getElementById(
@@ -330,7 +300,7 @@ document
       ).value || "txt";
 
     if (!base64.trim()) {
-      setStatus("Paste Base64 text first.");
+      setStatus("Paste Base64 text.");
       return;
     }
 
@@ -366,190 +336,97 @@ document
         "Base64 decoded successfully.",
       );
     } catch {
-      setStatus("Invalid Base64 string.");
+      setStatus("Invalid Base64.");
     }
   });
 
 /*
 -----------------------------------
-AUDIO TO WAV
+TEXT CONVERTER
 -----------------------------------
 */
 
 document
-  .getElementById("convertAudioBtn")
-  .addEventListener("click", async () => {
-    const file =
-      document.getElementById("audioInput")
-        .files[0];
+  .getElementById("convertTextBtn")
+  .addEventListener("click", () => {
+    const input =
+      document.getElementById("textInput");
 
-    if (!file) {
-      setStatus("Please select an audio file.");
+    const format =
+      document.getElementById("textFormat").value;
+
+    let text = input.value;
+
+    if (!text.trim()) {
+      setStatus("Enter some text.");
       return;
     }
 
     try {
-      const audioContext =
-        new AudioContext();
+      switch (format) {
+        case "uppercase":
+          text = text.toUpperCase();
+          break;
 
-      const arrayBuffer =
-        await file.arrayBuffer();
+        case "lowercase":
+          text = text.toLowerCase();
+          break;
 
-      const audioBuffer =
-        await audioContext.decodeAudioData(
-          arrayBuffer,
-        );
+        case "capitalize":
+          text = text.replace(
+            /\b\w/g,
+            (c) => c.toUpperCase(),
+          );
+          break;
 
-      const wavBlob =
-        audioBufferToWav(audioBuffer);
+        case "reverse":
+          text = text
+            .split("")
+            .reverse()
+            .join("");
+          break;
 
-      downloadFile(
-        wavBlob,
-        "converted.wav",
-        "audio/wav",
-      );
+        case "binary":
+          text = text
+            .split("")
+            .map((char) =>
+              char.charCodeAt(0).toString(2),
+            )
+            .join(" ");
+          break;
 
-      setStatus("Audio converted to WAV.");
+        case "base64":
+          text = btoa(text);
+          break;
+
+        case "urlencode":
+          text = encodeURIComponent(text);
+          break;
+
+        case "urldecode":
+          text = decodeURIComponent(text);
+          break;
+
+        case "htmlescape":
+          text = text
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;");
+          break;
+      }
+
+      input.value = text;
+
+      setStatus("Text converted.");
     } catch {
-      setStatus(
-        "Audio conversion failed.",
-      );
+      setStatus("Text conversion failed.");
     }
   });
 
 /*
 -----------------------------------
-TEXT CASE CONVERTER
------------------------------------
-*/
-
-let caseResult = "";
-
-document
-  .getElementById("uppercaseBtn")
-  .addEventListener("click", () => {
-    const text =
-      document.getElementById("caseInput")
-        .value;
-
-    caseResult = text.toUpperCase();
-
-    document.getElementById(
-      "caseInput",
-    ).value = caseResult;
-
-    setStatus("Converted to uppercase.");
-  });
-
-document
-  .getElementById("lowercaseBtn")
-  .addEventListener("click", () => {
-    const text =
-      document.getElementById("caseInput")
-        .value;
-
-    caseResult = text.toLowerCase();
-
-    document.getElementById(
-      "caseInput",
-    ).value = caseResult;
-
-    setStatus("Converted to lowercase.");
-  });
-
-document
-  .getElementById("downloadCaseBtn")
-  .addEventListener("click", () => {
-    const text =
-      document.getElementById("caseInput")
-        .value;
-
-    downloadFile(
-      text,
-      "converted.txt",
-      "text/plain",
-    );
-
-    setStatus("Text downloaded.");
-  });
-
-/*
------------------------------------
-URL ENCODER / DECODER
------------------------------------
-*/
-
-document
-  .getElementById("encodeUrlBtn")
-  .addEventListener("click", () => {
-    const input =
-      document.getElementById("urlInput");
-
-    input.value = encodeURIComponent(
-      input.value,
-    );
-
-    setStatus("URL encoded.");
-  });
-
-document
-  .getElementById("decodeUrlBtn")
-  .addEventListener("click", () => {
-    const input =
-      document.getElementById("urlInput");
-
-    try {
-      input.value = decodeURIComponent(
-        input.value,
-      );
-
-      setStatus("URL decoded.");
-    } catch {
-      setStatus("Invalid encoded URL.");
-    }
-  });
-
-/*
------------------------------------
-HTML ESCAPER
------------------------------------
-*/
-
-document
-  .getElementById("escapeHtmlBtn")
-  .addEventListener("click", () => {
-    const input =
-      document.getElementById("htmlInput");
-
-    input.value = input.value
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;")
-      .replace(/'/g, "&#039;");
-
-    setStatus("HTML escaped.");
-  });
-
-document
-  .getElementById("unescapeHtmlBtn")
-  .addEventListener("click", () => {
-    const input =
-      document.getElementById("htmlInput");
-
-    input.value = input.value
-      .replace(/&lt;/g, "<")
-      .replace(/&gt;/g, ">")
-      .replace(/&quot;/g, '"')
-      .replace(/&#039;/g, "'")
-      .replace(/&amp;/g, "&");
-
-    setStatus("HTML unescaped.");
-  });
-
-/*
------------------------------------
-NUMBER BASE CONVERTER
+NUMBER CONVERTER
 -----------------------------------
 */
 
@@ -557,57 +434,50 @@ document
   .getElementById("convertNumberBtn")
   .addEventListener("click", () => {
     const number = parseInt(
-      document.getElementById("numberInput")
-        .value,
+      document.getElementById("numberInput").value,
     );
+
+    const format =
+      document.getElementById("numberFormat").value;
+
+    const output =
+      document.getElementById("numberOutput");
 
     if (isNaN(number)) {
       setStatus("Invalid number.");
       return;
     }
 
-    document.getElementById(
-      "numberOutput",
-    ).value =
-      `Binary: ${number.toString(2)}\n\n` +
-      `Hexadecimal: ${number.toString(16)}\n\n` +
-      `Octal: ${number.toString(8)}`;
+    let result = "";
 
-    setStatus("Number converted.");
-  });
+    switch (format) {
+      case "binary":
+        result = number.toString(2);
+        break;
 
-/*
------------------------------------
-JSON FORMATTER
------------------------------------
-*/
+      case "hex":
+        result = number.toString(16);
+        break;
 
-document
-  .getElementById("formatJsonBtn")
-  .addEventListener("click", () => {
-    const input =
-      document.getElementById(
-        "jsonFormatterInput",
-      );
+      case "octal":
+        result = number.toString(8);
+        break;
 
-    try {
-      const formatted = JSON.stringify(
-        JSON.parse(input.value),
-        null,
-        2,
-      );
-
-      input.value = formatted;
-
-      setStatus("JSON formatted.");
-    } catch {
-      setStatus("Invalid JSON.");
+      case "roman":
+        result = toRoman(number);
+        break;
     }
+
+    output.value = result;
+
+    setStatus(
+      `Converted to ${format.toUpperCase()}.`,
+    );
   });
 
 /*
 -----------------------------------
-SHA-256 HASH GENERATOR
+HASH GENERATOR
 -----------------------------------
 */
 
@@ -615,35 +485,84 @@ document
   .getElementById("generateHashBtn")
   .addEventListener("click", async () => {
     const text =
-      document.getElementById("hashInput")
-        .value;
+      document.getElementById("hashInput").value;
 
-    const encoder = new TextEncoder();
+    const format =
+      document.getElementById("hashFormat").value;
 
-    const data = encoder.encode(text);
+    if (!text.trim()) {
+      setStatus("Enter some text.");
+      return;
+    }
 
-    const hashBuffer =
-      await crypto.subtle.digest(
-        "SHA-256",
-        data,
+    try {
+      const encoder = new TextEncoder();
+
+      const data = encoder.encode(text);
+
+      const hashBuffer =
+        await crypto.subtle.digest(
+          format,
+          data,
+        );
+
+      const hashArray = Array.from(
+        new Uint8Array(hashBuffer),
       );
 
-    const hashArray = Array.from(
-      new Uint8Array(hashBuffer),
-    );
+      const hashHex = hashArray
+        .map((b) =>
+          b.toString(16).padStart(2, "0"),
+        )
+        .join("");
 
-    const hashHex = hashArray
-      .map((b) =>
-        b.toString(16).padStart(2, "0"),
-      )
-      .join("");
+      document.getElementById(
+        "hashOutput",
+      ).value = hashHex;
 
-    document.getElementById(
-      "hashOutput",
-    ).value = hashHex;
-
-    setStatus("SHA-256 generated.");
+      setStatus(
+        `${format} hash generated.`,
+      );
+    } catch {
+      setStatus("Hash generation failed.");
+    }
   });
+
+/*
+-----------------------------------
+ROMAN NUMERAL CONVERTER
+-----------------------------------
+*/
+
+function toRoman(num) {
+  const roman = {
+    M: 1000,
+    CM: 900,
+    D: 500,
+    CD: 400,
+    C: 100,
+    XC: 90,
+    L: 50,
+    XL: 40,
+    X: 10,
+    IX: 9,
+    V: 5,
+    IV: 4,
+    I: 1,
+  };
+
+  let str = "";
+
+  for (let i of Object.keys(roman)) {
+    let q = Math.floor(num / roman[i]);
+
+    num -= q * roman[i];
+
+    str += i.repeat(q);
+  }
+
+  return str;
+}
 
 /*
 -----------------------------------
@@ -658,11 +577,11 @@ function audioBufferToWav(buffer) {
   const length =
     buffer.length * numOfChan * 2 + 44;
 
-  const bufferArray = new ArrayBuffer(
-    length,
-  );
+  const bufferArray =
+    new ArrayBuffer(length);
 
-  const view = new DataView(bufferArray);
+  const view =
+    new DataView(bufferArray);
 
   const channels = [];
 
