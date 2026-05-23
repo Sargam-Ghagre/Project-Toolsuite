@@ -6,164 +6,218 @@
     <title>Digital Logic Simulator</title>
     <style>
         :root {
-            --bg-color: #1e1e1e;
-            --panel-bg: #2d2d2d;
-            --text-color: #e0e0e0;
+            --bg-color: #09090b;
+            --panel-bg: #18181b;
+            --text-color: #f4f4f5;
             --accent-color: #00d2ff;
-            --wire-off: #555;
-            --wire-on: #4caf50; /* Green for High signal */
-            --gate-bg: #333;
-            --gate-border: #555;
+            --wire-off: #3f3f46;
+            --wire-on: #22c55e;
+            --gate-bg: #1f1f23;
+            --gate-border: #27272a;
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             background-color: var(--bg-color);
             color: var(--text-color);
             margin: 0;
             display: flex;
             height: 100vh;
             overflow: hidden;
+            user-select: none;
         }
 
-        /* Sidebar */
+        /* Sidebar container */
         .sidebar {
             width: 260px;
             background-color: var(--panel-bg);
-            border-right: 1px solid #444;
+            border-right: 1px solid #27272a;
             display: flex;
             flex-direction: column;
             padding: 20px;
             z-index: 100;
-            box-shadow: 2px 0 10px rgba(0,0,0,0.3);
+            box-shadow: 2px 0 10px rgba(0,0,0,0.5);
         }
 
-        h2 { margin-top: 0; font-size: 1.2rem; }
-        p.desc { font-size: 0.85rem; color: #aaa; margin-bottom: 20px; }
+        h2 { 
+            margin-top: 0; 
+            font-size: 1.1rem; 
+            font-weight: 700;
+            letter-spacing: -0.025em;
+        }
+        p.desc { font-size: 0.8rem; color: #a1a1aa; margin-bottom: 20px; line-height: 1.4; }
 
         .component-list {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 10px;
+            gap: 8px;
             margin-bottom: 20px;
         }
 
         button.comp-btn {
             background: var(--gate-bg);
             border: 1px solid var(--gate-border);
-            color: white;
-            padding: 10px;
+            color: #e4e4e7;
+            padding: 8px;
             border-radius: 6px;
             cursor: pointer;
-            transition: 0.2s;
-            font-weight: bold;
+            transition: all 0.2s;
+            font-size: 0.75rem;
+            font-weight: 600;
         }
-        button.comp-btn:hover { border-color: var(--accent-color); background: #444; }
+        button.comp-btn:hover { 
+            border-color: var(--accent-color); 
+            background: #27272a; 
+            color: #fff;
+        }
 
         .truth-table-panel {
             flex-grow: 1;
             overflow-y: auto;
-            border-top: 1px solid #444;
+            border-top: 1px solid #27272a;
             padding-top: 15px;
+        }
+        
+        .truth-table-panel h3 {
+            font-size: 0.85rem;
+            color: #e4e4e7;
+            margin-top: 0;
+            margin-bottom: 10px;
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 0.85rem;
+            font-size: 0.75rem;
             text-align: center;
         }
-        th, td { border: 1px solid #444; padding: 5px; }
-        th { background: #333; color: var(--accent-color); }
-        tr.active-row { background: rgba(76, 175, 80, 0.2); border: 1px solid #4caf50; }
+        th, td { border: 1px solid #27272a; padding: 6px; }
+        th { background: #202024; color: var(--accent-color); font-weight: 600; }
+        tr.active-row { background: rgba(34, 197, 94, 0.15); }
 
-        /* Workspace */
+        /* Workspace sandbox area */
         .workspace {
             flex-grow: 1;
             position: relative;
-            background-image: radial-gradient(#333 1px, transparent 1px);
+            background-color: var(--bg-color);
+            background-image: radial-gradient(#27272a 1px, transparent 1px);
             background-size: 20px 20px;
             overflow: hidden;
-            user-select: none;
         }
 
         /* Gates/Nodes */
         .gate {
             position: absolute;
             background: var(--gate-bg);
-            border: 1px solid var(--gate-border);
+            border: 1.5px solid var(--gate-border);
             border-radius: 8px;
             padding: 5px 10px;
-            min-width: 60px;
+            min-width: 75px;
             text-align: center;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
             cursor: grab;
             z-index: 10;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            height: 40px;
+            height: 42px;
+            box-sizing: border-box;
+            transition: border-color 0.15s, box-shadow 0.15s;
         }
-        .gate:active { cursor: grabbing; border-color: var(--accent-color); }
-        .gate-title { font-weight: bold; pointer-events: none; margin: 0 10px; }
+        .gate:active { cursor: grabbing; }
+        .gate.selected {
+            border-color: var(--accent-color) !important;
+            box-shadow: 0 0 8px rgba(0, 210, 255, 0.4);
+        }
+        .gate-title { 
+            font-size: 0.75rem;
+            font-weight: 700; 
+            pointer-events: none; 
+            margin: 0 auto;
+            color: #d4d4d8;
+        }
 
-        /* Terminals (Dots) */
+        /* Terminals (Connection Nodes) */
         .terminal {
-            width: 12px;
-            height: 12px;
-            background: #777;
+            width: 10px;
+            height: 10px;
+            background: #52525b;
             border-radius: 50%;
             cursor: crosshair;
-            transition: 0.2s;
+            transition: all 0.2s;
+            position: relative;
+            border: 1px solid var(--bg-color);
         }
-        .terminal:hover { transform: scale(1.2); background: white; }
-        .terminal.output { margin-right: -16px; background: #555; }
-        .terminal.input { margin-left: -16px; background: #555; }
+        .terminal:hover { transform: scale(1.3); background: #fff; }
+        .terminal.output { margin-right: -15px; }
+        .terminal.input { margin-left: -15px; }
         
-        /* Active State */
-        .terminal.on { background: var(--wire-on); box-shadow: 0 0 5px var(--wire-on); }
+        /* Active signal wire simulation glows */
+        .terminal.on { background: var(--wire-on) !important; box-shadow: 0 0 6px var(--wire-on); }
         
-        /* Switch & Bulb Specifics */
-        .gate.switch { border-color: #00d2ff; }
-        .gate.bulb { border-color: #ffeb3b; }
-        .gate.bulb.on { background: rgba(255, 235, 59, 0.2); box-shadow: 0 0 15px rgba(255, 235, 59, 0.4); }
+        /* Switch and Bulb styles */
+        .gate.switch { border-color: #3f3f46; }
+        .gate.bulb { border-color: #3f3f46; }
+        .gate.bulb.on { 
+            border-color: #eab308 !important; 
+            box-shadow: 0 0 12px rgba(234, 179, 8, 0.4); 
+            background: rgba(234, 179, 8, 0.1);
+        }
+        .gate.bulb.on .gate-title { color: #facc15; }
 
-        /* SVG Overlay for Wires */
+        /* SVG Wire Overlay layer */
         svg {
             position: absolute;
             top: 0; left: 0;
             width: 100%; height: 100%;
-            pointer-events: none; /* Let clicks pass through to workspace */
-            z-index: 0;
+            pointer-events: none;
+            z-index: 5;
         }
         path {
             fill: none;
             stroke-width: 3;
             stroke-linecap: round;
             transition: stroke 0.1s;
+            pointer-events: stroke;
+            cursor: pointer;
         }
 
-        /* Controls */
+        /* Toolbar overlay */
         .toolbar {
             position: absolute;
-            top: 20px; right: 20px;
+            top: 15px; right: 15px;
             display: flex;
-            gap: 10px;
+            gap: 8px;
             z-index: 100;
         }
         .action-btn {
-            background: #444; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer;
+            background: #1f1f23; 
+            color: #d4d4d8; 
+            border: 1px solid #27272a; 
+            padding: 6px 12px; 
+            border-radius: 6px; 
+            cursor: pointer;
+            font-size: 0.75rem;
+            font-weight: 600;
+            transition: all 0.15s;
         }
-        .action-btn:hover { background: var(--accent-color); color: #000; }
-        .action-btn.delete { background: #f44336; }
-
+        .action-btn:hover { background: #27272a; color: #fff; }
+        .action-btn.delete { 
+            background: #7f1d1d; 
+            border-color: #991b1b; 
+            color: #fca5a5;
+        }
+        .action-btn.delete:hover {
+            background: #991b1b;
+            color: #fff;
+        }
     </style>
 </head>
 <body>
 
     <div class="sidebar">
         <h2>Logic Lab</h2>
-        <p class="desc">Drag & Drop components. Click outputs then inputs to connect.</p>
+        <p class="desc">Drag components. Click output, then input to wire. Click wires or gates to select and delete.</p>
 
         <div class="component-list">
             <button class="comp-btn" onclick="addGate('SWITCH')">Input (1/0)</button>
@@ -172,13 +226,16 @@
             <button class="comp-btn" onclick="addGate('OR')">OR</button>
             <button class="comp-btn" onclick="addGate('NOT')">NOT</button>
             <button class="comp-btn" onclick="addGate('XOR')">XOR</button>
+            <button class="comp-btn" onclick="addGate('NAND')">NAND</button>
+            <button class="comp-btn" onclick="addGate('NOR')">NOR</button>
+            <button class="comp-btn" onclick="addGate('XNOR')">XNOR</button>
         </div>
 
         <div class="truth-table-panel">
             <h3>Truth Table</h3>
-            <button class="action-btn" style="width:100%; margin-bottom:10px; font-size: 0.8rem;" onclick="generateTable()">Generat for Circuit</button>
+            <button class="action-btn" style="width:100%; margin-bottom:12px;" onclick="generateTable()">Generate Table</button>
             <div id="table-output">
-                <p style="text-align:center; color:#666;">Build a circuit with Inputs and Outputs to see data.</p>
+                <p style="text-align:center; color:#52525b; font-size:0.75rem;">Add Inputs and Outputs to generate truth table.</p>
             </div>
         </div>
     </div>
@@ -186,10 +243,474 @@
     <div class="workspace" id="workspace">
         <svg id="wire-layer"></svg>
         <div class="toolbar">
+            <button class="action-btn delete" id="delete-btn" style="display: none;" onclick="deleteSelected()">Delete Selected</button>
             <button class="action-btn" onclick="clearWorkspace()">Clear All</button>
         </div>
     </div>
 
-    <script src="logic.js"></script>
+    <script>
+        const workspace = document.getElementById('workspace');
+        const wireLayer = document.getElementById('wire-layer');
+        const tableOutput = document.getElementById('table-output');
+        const deleteBtn = document.getElementById('delete-btn');
+
+        let gates = [];
+        let wires = []; // { from: {gateId, index}, to: {gateId, index} }
+        let draggedGate = null;
+        let offset = { x: 0, y: 0 };
+        let connectingStart = null; // { gateId, index }
+        let selectedEntity = null; // { type: 'gate', id } or { type: 'wire', fromGateId, toGateId, toIndex }
+        let uniqueId = 0;
+
+        // Gate Definitions and Behavioral Logic mapping
+        const GATE_TYPES = {
+            AND: { inputs: 2, color: '#4caf50', logic: (inps) => inps[0] && inps[1] },
+            OR:  { inputs: 2, color: '#2196f3', logic: (inps) => inps[0] || inps[1] },
+            NOT: { inputs: 1, color: '#f44336', logic: (inps) => !inps[0] },
+            XOR: { inputs: 2, color: '#9c27b0', logic: (inps) => inps[0] !== inps[1] },
+            NAND: { inputs: 2, color: '#ff9800', logic: (inps) => !(inps[0] && inps[1]) },
+            NOR:  { inputs: 2, color: '#795548', logic: (inps) => !(inps[0] || inps[1]) },
+            XNOR: { inputs: 2, color: '#e91e63', logic: (inps) => inps[0] === inps[1] },
+            SWITCH: { inputs: 0, color: '#00d2ff', logic: () => false },
+            BULB:   { inputs: 1, color: '#ffeb3b', logic: (inps) => inps[0] }
+        };
+
+        function addGate(type, customX = null, customY = null) {
+            const id = uniqueId++;
+            const config = GATE_TYPES[type];
+            
+            const spawnX = customX !== null ? customX : 80 + (gates.length * 30) % 200;
+            const spawnY = customY !== null ? customY : 100 + (gates.length * 40) % 250;
+
+            const gate = {
+                id: id,
+                type: type,
+                x: spawnX,
+                y: spawnY,
+                inputs: Array(config.inputs).fill(false),
+                output: false,
+                element: null
+            };
+
+            // Build Gate DOM element container
+            const el = document.createElement('div');
+            el.className = `gate ${type.toLowerCase()}`;
+            el.id = `gate-${id}`;
+            el.style.left = gate.x + 'px';
+            el.style.top = gate.y + 'px';
+
+            // Connect boundary click to select gate entity
+            el.addEventListener('mousedown', (e) => {
+                if (e.target.classList.contains('terminal') || (type === 'SWITCH' && e.target.classList.contains('gate-title'))) return;
+                selectEntity({ type: 'gate', id: id });
+                draggedGate = gate;
+                offset.x = e.clientX - gate.x;
+                offset.y = e.clientY - gate.y;
+                e.stopPropagation();
+            });
+
+            // Create Input Terminals
+            const inputContainer = document.createElement('div');
+            inputContainer.style.display = 'flex';
+            inputContainer.style.flexDirection = 'column';
+            inputContainer.style.gap = '8px';
+            inputContainer.style.justifyContent = 'center';
+            inputContainer.style.height = '100%';
+            
+            for (let i = 0; i < config.inputs; i++) {
+                const term = document.createElement('div');
+                term.className = 'terminal input';
+                term.title = `Input ${i + 1}`;
+                term.onclick = (e) => handleTerminalClick(e, id, 'input', i);
+                inputContainer.appendChild(term);
+            }
+            el.appendChild(inputContainer);
+
+            // Title / Switch Toggler text representation
+            const title = document.createElement('div');
+            title.className = 'gate-title';
+            if (type === 'SWITCH') {
+                title.innerText = "0";
+                title.style.cursor = 'pointer';
+                title.style.pointerEvents = 'auto';
+                title.onclick = (e) => {
+                    e.stopPropagation();
+                    toggleSwitch(gate);
+                };
+            } else {
+                title.innerText = type;
+            }
+            el.appendChild(title);
+
+            // Create Output Terminals (all gates except Bulbs have one output)
+            if (type !== 'BULB') {
+                const term = document.createElement('div');
+                term.className = 'terminal output';
+                term.title = 'Output';
+                term.onclick = (e) => handleTerminalClick(e, id, 'output', 0);
+                el.appendChild(term);
+            }
+
+            gate.element = el;
+            workspace.appendChild(el);
+            gates.push(gate);
+
+            return gate;
+        }
+
+        document.addEventListener('mousemove', (e) => {
+            if (draggedGate) {
+                const rect = workspace.getBoundingClientRect();
+                let x = e.clientX - offset.x;
+                let y = e.clientY - offset.y;
+                
+                // Keep boundary inside visual limits
+                x = Math.max(10, Math.min(rect.width - 90, x));
+                y = Math.max(10, Math.min(rect.height - 50, y));
+
+                draggedGate.x = x;
+                draggedGate.y = y;
+                draggedGate.element.style.left = x + 'px';
+                draggedGate.element.style.top = y + 'px';
+                drawWires();
+            }
+        });
+
+        document.addEventListener('mouseup', () => {
+            draggedGate = null;
+        });
+
+        // Cancel connection wires if background is clicked
+        workspace.addEventListener('click', (e) => {
+            if (e.target === workspace) {
+                selectEntity(null);
+                if (connectingStart) {
+                    connectingStart = null;
+                    workspace.style.cursor = 'default';
+                }
+            }
+        });
+
+        function handleTerminalClick(e, gateId, type, index) {
+            e.stopPropagation();
+
+            if (type === 'output') {
+                connectingStart = { gateId, index };
+                workspace.style.cursor = 'crosshair';
+            } else if (type === 'input') {
+                if (connectingStart) {
+                    // Prevent linking gate to itself
+                    if (connectingStart.gateId === gateId) {
+                        connectingStart = null;
+                        workspace.style.cursor = 'default';
+                        return;
+                    }
+                    
+                    // Filter out existing connections attached to this input port (limit: 1 wire per input)
+                    wires = wires.filter(w => !(w.to.gateId === gateId && w.to.index === index));
+                    
+                    wires.push({
+                        from: { gateId: connectingStart.gateId, index: connectingStart.index },
+                        to: { gateId, index }
+                    });
+                    
+                    connectingStart = null;
+                    workspace.style.cursor = 'default';
+                    simulate();
+                }
+            }
+        }
+
+        function toggleSwitch(gate) {
+            gate.output = !gate.output;
+            gate.element.querySelector('.gate-title').innerText = gate.output ? "1" : "0";
+            gate.element.querySelector('.gate-title').style.color = gate.output ? "#22c55e" : "#d4d4d8";
+            simulate();
+        }
+
+        function propagateLogicQuietly() {
+            const maxPasses = 100;
+            let changed = true;
+            let passes = 0;
+
+            // Loop propagation until stable steady state is reached
+            while (changed && passes < maxPasses) {
+                changed = false;
+                gates.forEach(gate => {
+                    if (gate.type === 'SWITCH') return;
+
+                    const inputValues = Array(gate.inputs.length).fill(false);
+                    wires.forEach(wire => {
+                        if (wire.to.gateId === gate.id) {
+                            const sourceGate = gates.find(g => g.id === wire.from.gateId);
+                            if (sourceGate) {
+                                inputValues[wire.to.index] = sourceGate.output;
+                            }
+                        }
+                    });
+
+                    const newOutput = GATE_TYPES[gate.type].logic(inputValues);
+                    if (gate.output !== newOutput) {
+                        gate.output = newOutput;
+                        changed = true;
+                    }
+                    
+                    for (let i = 0; i < gate.inputs.length; i++) {
+                        gate.inputs[i] = inputValues[i];
+                    }
+                });
+                passes++;
+            }
+        }
+
+        function simulate() {
+            propagateLogicQuietly();
+
+            // Refresh DOM Elements based on settled states
+            gates.forEach(gate => {
+                if (gate.type === 'BULB') {
+                    if (gate.output) {
+                        gate.element.classList.add('on');
+                    } else {
+                        gate.element.classList.remove('on');
+                    }
+                }
+
+                // Update Input Terminals visual glow state
+                const inputTerms = gate.element.querySelectorAll('.terminal.input');
+                inputTerms.forEach((term, idx) => {
+                    if (gate.inputs[idx]) {
+                        term.classList.add('on');
+                    } else {
+                        term.classList.remove('on');
+                    }
+                });
+
+                // Update Output Terminal visual glow state
+                const outputTerm = gate.element.querySelector('.terminal.output');
+                if (outputTerm) {
+                    if (gate.output) {
+                        outputTerm.classList.add('on');
+                    } else {
+                        outputTerm.classList.remove('on');
+                    }
+                }
+            });
+
+            drawWires();
+        }
+
+        function getTerminalCoords(gateId, type, index) {
+            const gate = gates.find(g => g.id === gateId);
+            if (!gate || !gate.element) return { x: 0, y: 0 };
+
+            // Find terminal relative to computed browser matrix offsets
+            const selector = type === 'input' 
+                ? `.terminal.input:nth-child(${index + 1})` 
+                : `.terminal.output`;
+            const term = gate.element.querySelector(selector);
+            if (!term) return { x: gate.x, y: gate.y };
+
+            const rect = term.getBoundingClientRect();
+            const wsRect = workspace.getBoundingClientRect();
+
+            return {
+                x: rect.left - wsRect.left + rect.width / 2,
+                y: rect.top - wsRect.top + rect.height / 2
+            };
+        }
+
+        function drawWires() {
+            wireLayer.innerHTML = '';
+            
+            wires.forEach(wire => {
+                const fromGate = gates.find(g => g.id === wire.from.gateId);
+                const toGate = gates.find(g => g.id === wire.to.gateId);
+                if(!fromGate || !toGate) return;
+
+                const start = getTerminalCoords(wire.from.gateId, 'output', wire.from.index);
+                const end = getTerminalCoords(wire.to.gateId, 'input', wire.to.index);
+
+                // Draw clean cubic Bezier dynamic routing path
+                const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                const dx = Math.abs(end.x - start.x) * 0.5;
+                const d = `M ${start.x} ${start.y} C ${start.x + dx} ${start.y}, ${end.x - dx} ${end.y}, ${end.x} ${end.y}`;
+                path.setAttribute('d', d);
+                
+                const isSelected = selectedEntity && selectedEntity.type === 'wire' && 
+                    selectedEntity.fromGateId === wire.from.gateId && 
+                    selectedEntity.toGateId === wire.to.gateId && 
+                    selectedEntity.toIndex === wire.to.index;
+
+                if (isSelected) {
+                    path.setAttribute('stroke', '#00d2ff');
+                    path.setAttribute('stroke-width', '4');
+                    path.setAttribute('stroke-dasharray', '5,5');
+                } else {
+                    path.setAttribute('stroke', fromGate.output ? '#22c55e' : '#52525b');
+                    path.setAttribute('stroke-width', '3');
+                    path.removeAttribute('stroke-dasharray');
+                }
+
+                path.style.pointerEvents = 'stroke';
+                path.style.cursor = 'pointer';
+                path.onclick = (e) => {
+                    e.stopPropagation();
+                    selectEntity({ type: 'wire', fromGateId: wire.from.gateId, toGateId: wire.to.gateId, toIndex: wire.to.index });
+                };
+
+                wireLayer.appendChild(path);
+            });
+        }
+
+        function selectEntity(entity) {
+            if (selectedEntity && selectedEntity.type === 'gate') {
+                const el = document.getElementById(`gate-${selectedEntity.id}`);
+                if (el) el.classList.remove('selected');
+            }
+
+            selectedEntity = entity;
+
+            if (selectedEntity && selectedEntity.type === 'gate') {
+                const el = document.getElementById(`gate-${selectedEntity.id}`);
+                if (el) el.classList.add('selected');
+            }
+
+            if (selectedEntity) {
+                deleteBtn.style.display = 'inline-block';
+            } else {
+                deleteBtn.style.display = 'none';
+            }
+            drawWires();
+        }
+
+        function deleteSelected() {
+            if (!selectedEntity) return;
+
+            if (selectedEntity.type === 'gate') {
+                const id = selectedEntity.id;
+                wires = wires.filter(w => w.from.gateId !== id && w.to.gateId !== id);
+                gates = gates.filter(g => g.id !== id);
+                const el = document.getElementById(`gate-${id}`);
+                if (el) el.remove();
+            } else if (selectedEntity.type === 'wire') {
+                wires = wires.filter(w => !(w.from.gateId === selectedEntity.fromGateId && 
+                                           w.to.gateId === selectedEntity.toGateId && 
+                                           w.to.index === selectedEntity.toIndex));
+            }
+
+            selectEntity(null);
+            simulate();
+        }
+
+        // Delete keybind support
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Delete' || e.key === 'Backspace') {
+                deleteSelected();
+            }
+        });
+
+        function generateTable() {
+            const inputs = gates.filter(g => g.type === 'SWITCH');
+            const outputs = gates.filter(g => g.type === 'BULB');
+
+            if (inputs.length === 0 || outputs.length === 0) {
+                tableOutput.innerHTML = '<p style="color:#f44336; text-align:center; font-size:0.75rem;">Need at least 1 Input and 1 Output.</p>';
+                return;
+            }
+            if (inputs.length > 4) {
+                tableOutput.innerHTML = '<p style="color:#f44336; text-align:center; font-size:0.75rem;">Too many inputs (>4) for auto-generation.</p>';
+                return;
+            }
+
+            // Save state of ALL registers (switches, gates, inputs) to safely restore later
+            const savedStates = gates.map(g => ({
+                id: g.id,
+                output: g.output,
+                inputs: [...g.inputs]
+            }));
+
+            let html = '<table><thead><tr>';
+            inputs.forEach((g, i) => html += `<th>In ${i + 1}</th>`);
+            outputs.forEach((g, i) => html += `<th>Out ${i + 1}</th>`);
+            html += '</tr></thead><tbody>';
+
+            const combinations = Math.pow(2, inputs.length);
+            for (let i = 0; i < combinations; i++) {
+                
+                // 1. Wipe all non-SWITCH outputs to clean false to isolate feedback loop states
+                gates.forEach(g => {
+                    if (g.type !== 'SWITCH') {
+                        g.output = false;
+                        g.inputs.fill(false);
+                    }
+                });
+
+                // 2. Set binary input states
+                inputs.forEach((inp, idx) => {
+                    const bit = (i >> (inputs.length - 1 - idx)) & 1;
+                    inp.output = bit === 1;
+                });
+
+                // 3. Propagate quiet logic loop until stable
+                propagateLogicQuietly();
+
+                // 4. Highlight the row representing the current live state of the workspace
+                const isCurrentMatch = inputs.every((inp, idx) => {
+                    const saved = savedStates.find(s => s.id === inp.id);
+                    return inp.output === (saved ? saved.output : false);
+                });
+
+                html += `<tr class="${isCurrentMatch ? 'active-row' : ''}">`;
+                inputs.forEach(inp => html += `<td>${inp.output ? 1 : 0}</td>`);
+                outputs.forEach(out => html += `<td style="color:${out.output ? '#22c55e' : '#71717a'}; font-weight:bold;">${out.output ? 1 : 0}</td>`);
+                html += `</tr>`;
+            }
+            html += '</tbody></table>';
+            tableOutput.innerHTML = html;
+
+            // Restore initial interactive state representation
+            gates.forEach(g => {
+                const saved = savedStates.find(s => s.id === g.id);
+                if (saved) {
+                    g.output = saved.output;
+                    g.inputs = [...saved.inputs];
+                    if (g.type === 'SWITCH') {
+                        g.element.querySelector('.gate-title').innerText = g.output ? "1" : "0";
+                        g.element.querySelector('.gate-title').style.color = g.output ? "#22c55e" : "#d4d4d8";
+                    }
+                }
+            });
+
+            simulate();
+        }
+
+        function clearWorkspace() {
+            workspace.innerHTML = '<svg id="wire-layer"></svg><div class="toolbar"><button class="action-btn delete" id="delete-btn" style="display: none;" onclick="deleteSelected()">Delete Selected</button><button class="action-btn" onclick="clearWorkspace()">Clear All</button></div>';
+            gates = [];
+            wires = [];
+            uniqueId = 0;
+            selectedEntity = null;
+            connectingStart = null;
+            tableOutput.innerHTML = '<p style="text-align:center; color:#52525b; font-size:0.75rem;">Add Inputs and Outputs to generate truth table.</p>';
+        }
+
+        window.onload = function() {
+            // Spawn preset layout: A connected AND gate circuit
+            addGate('SWITCH', 80, 100);
+            addGate('SWITCH', 80, 220);
+            addGate('AND', 220, 150);
+            addGate('BULB', 360, 160);
+
+            wires.push({ from: { gateId: 0, index: 0 }, to: { gateId: 2, index: 0 } });
+            wires.push({ from: { gateId: 1, index: 0 }, to: { gateId: 2, index: 1 } });
+            wires.push({ from: { gateId: 2, index: 0 }, to: { gateId: 3, index: 0 } });
+
+            // Ensure layout measurements are compiled by browser before painting paths
+            setTimeout(() => {
+                simulate();
+            }, 50);
+        };
+    </script>
 </body>
 </html>
