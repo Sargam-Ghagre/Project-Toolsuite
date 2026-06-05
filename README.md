@@ -1,108 +1,58 @@
-# 🛠️ Project Toolsuite
+# Project-Toolsuite
 
-**Simple. Fast. Free.**
+Project Toolsuite is a privacy-first collection of browser-based utilities designed for moments when speed, simplicity, and reliability matter most.
 
-> A privacy-first collection of browser-based utilities — open your browser, complete your task, and download the result. No friction. No distractions.
+Whether you're working with files, development tools, graphics, security utilities, or quick productivity workflows, the goal remains the same:
 
----
+Your work stays yours.
 
-# 📖 Project Overview
+No logins. No paywalls. No "verify your email" for the 17th time.
 
-Project Toolsuite is an open-source platform that provides a collection of browser-based utility tools for developers, students, designers, and everyday users.
-
-The platform is designed with a privacy-first approach, ensuring that users can perform tasks directly in their browser without unnecessary data collection or account creation.
-
-### 🎯 Mission
-
-To provide fast, free, and privacy-respecting tools that help users complete everyday tasks efficiently.
+*In development, forever... :)*
 
 ---
 
-# ✨ Features
+## What is Project Toolsuite?
 
-## 📁 File Utilities
+Project Toolsuite is an open-source collection of browser-based tools built to make everyday tasks easier.
 
-* File conversion
-* File management helpers
-* Compression tools
+The project focuses on simplicity, privacy, and accessibility. Most tools are designed to work directly in the browser, helping users get things done without unnecessary setup or account creation.
 
-## 💻 Developer Tools
+Some of the areas currently covered include:
 
-* Code formatters
-* Encoders and decoders
-* Text utilities
-* Developer productivity tools
-
-## 🎨 Graphics & Design
-
-* Image processing utilities
-* Visual editing tools
-* Design support tools
-
-## 🔒 Security Tools
-
-* Password generators
-* Encryption helpers
-* Privacy-focused utilities
-
-## ⚡ Productivity Tools
-
-* Quick utility tools
-* Everyday workflow helpers
-* Time-saving solutions
+* File utilities
+* Developer tools
+* Graphics and design tools
+* Security utilities
+* Productivity tools
 
 ---
 
-# 🏗️ Architecture
+## Getting Started
 
-Project Toolsuite follows a browser-first architecture.
+### Use Online
 
-```text
-User Browser
-      ↓
-HTML + CSS + JavaScript
-      ↓
-Local Processing
-      ↓
-Result Output
-```
+Visit the live website and start using the available tools:
 
-Benefits:
+https://project-toolsuite.vercel.app
 
-* Faster performance
-* Better privacy
-* No mandatory sign-up
-* Lightweight architecture
+No installation required.
 
----
+### Run Locally
 
-# 🚀 Getting Started
-
-## Option 1: Use Online
-
-Simply visit the live website and start using the tools.
-
----
-
-## Option 2: Run Locally
-
-### Clone the Repository
+Clone the repository:
 
 ```bash
 git clone https://github.com/YOUR-USERNAME/Project-Toolsuite.git
 ```
 
-### Navigate to Project Folder
+Move into the project directory:
 
 ```bash
 cd Project-Toolsuite
 ```
 
-### Run Using Live Server
-
-Open the project in VS Code and start Live Server.
-
-OR
+Open `index.html` directly in your browser, or run a local server:
 
 ```bash
 npx serve .
@@ -116,19 +66,19 @@ http://localhost:3000
 
 ---
 
-# 🧰 Tech Stack
+## Tech Stack
 
-| Technology     | Purpose         |
-| -------------- | --------------- |
-| HTML5          | Structure       |
-| CSS3           | Styling         |
-| JavaScript     | Functionality   |
-| Service Worker | Offline Support |
-| Vercel         | Deployment      |
+This project is built using:
+
+* HTML5
+* CSS3
+* JavaScript
+* Service Worker (PWA support)
+* Vercel for deployment
 
 ---
 
-# 📂 Project Structure
+## Project Structure
 
 ```text
 Project-Toolsuite/
@@ -139,57 +89,36 @@ Project-Toolsuite/
 ├── images/
 ├── sw.js
 ├── index.html
-├── README.md
 ├── CONTRIBUTING.md
 ├── LICENSE
-└── SECURITY.md
+├── SECURITY.md
+└── README.md
 ```
 
 ---
 
-# 🚧 Roadmap
+## Contributing
 
-## Current Features
+Contributions are welcome, whether you're fixing bugs, improving documentation, or building new tools.
 
-* [x] Browser-based tools
-* [x] Responsive design
-* [x] Privacy-first approach
-* [x] Open-source collaboration
-
-## Planned Improvements
-
-* [ ] Additional utility tools
-* [ ] Better mobile experience
-* [ ] Improved accessibility
-* [ ] Enhanced UI/UX
-* [ ] Advanced productivity features
-
----
-
-
-# 🤝 Contributing
-
-We welcome contributors of all experience levels.
-
-### Steps to Contribute
+Basic workflow:
 
 1. Fork the repository
 2. Clone your fork
-3. Create a new branch
+3. Create a branch
 
 ```bash
 git checkout -b feature-name
 ```
 
 4. Make your changes
-
 5. Commit your work
 
 ```bash
 git commit -m "Add: feature description"
 ```
 
-6. Push changes
+6. Push your branch
 
 ```bash
 git push origin feature-name
@@ -197,37 +126,27 @@ git push origin feature-name
 
 7. Open a Pull Request
 
----
-
-# ❓ FAQ
-
-### Is Project Toolsuite free?
-
-Yes, all tools are free to use.
-
-### Do I need to create an account?
-
-No. Most tools can be used instantly.
-
-### Is my data uploaded?
-
-The project aims to process data locally in the browser whenever possible.
-
-### Can beginners contribute?
-
-Absolutely! Beginner contributions are welcome.
+For detailed guidelines, please read `CONTRIBUTING.md`.
 
 ---
 
-# 📜 License
+## Security
+
+If you discover a security issue, please follow the instructions in `SECURITY.md` and report it responsibly.
+
+Please do not open public issues for security vulnerabilities.
+
+---
+
+## License
 
 This project is licensed under the GNU General Public License v3.0.
 
-See the LICENSE file for complete details.
+See the `LICENSE` file for complete details.
 
 ---
 
-# 🏆 Contributors Leaderboard
+## Contributors Leaderboard
 
 <!-- LEADERBOARD_START -->
 
