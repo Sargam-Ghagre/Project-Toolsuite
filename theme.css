@@ -4,14 +4,18 @@
     --border: #000000;
     --card-hover: #000000;
     --tag-bg: #f0f0f0;
+    --muted: #888888;
+    --accent: #e0e0e0;
 }
 
-.dark-mode {
+body.dark-mode, .dark-mode {
     --bg: #1b1a1a;
     --text: #f0f0f0;
     --border: #f0f0f0;
     --card-hover: #f0f0f0;
     --tag-bg: #333333;
+    --muted: #aaaaaa;
+    --accent: #333333;
 }
 
 .dark-mode-toggle {

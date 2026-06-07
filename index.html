@@ -6,23 +6,8 @@
     <title>Project Toolsuite</title>
     <meta name="description" content="A collection of fast, minimal, privacy-first tools designed to get work done without friction.">
     <meta name="google-site-verification" content="rbMDsZDEnPXvV0H4Tf0EHHgfdPQy2doXIuO_JNCV9qM" />
+    <link rel="stylesheet" href="./theme.css">
     <style>
-
-        :root {
-        --bg: #ffffff;
-        --text: #000000;
-        --border: #000000;
-        --card-hover: #000000;
-        --tag-bg: #f0f0f0;
-    }
-
-body.dark-mode {
-    --bg: #1b1a1a;
-    --text: #f0f0f0;
-    --border: #f0f0f0;
-    --card-hover: #f0f0f0;
-    --tag-bg: #333333;
-    }
 
         body {
             font-family: 'Courier New', Courier, monospace;
@@ -593,6 +578,7 @@ Your work stays yours.</p>
         { name: "Typing Test", path: "tools/typing-test/typing-test.html", tags: ["Utilities"] },
         { name: "Hash Generator", path: "tools/hash generator/hash-generator.html", tags: ["Security"] },
         { name: "Steganography Tool", path: "tools/steganography/stego.html", tags: ["Security"] },
+        { name: "AES Encryption & Decryption", path: "tools/aes-encryption-decryption/aes.html", tags: ["Security"] },
         { name: "Online Compiler", path: "tools/compiler/compiler.html", tags: ["Dev"] },
         { name: "PDF Studio", path: "tools/pdf-toolkit/pdf_studio.html", tags: ["PDF"] },
         { name: "Git Studio", path: "tools/git-studio/git_studio.html", tags: ["Dev"] },
@@ -694,48 +680,6 @@ Your work stays yours.</p>
         });
     });
 </script>
-    <script>
-function updateThemeButton() {
-    const btn = document.getElementById('themeBtn');
-
-    if (!btn) return;
-
-    const isDark = document.body.classList.contains('dark-mode');
-    const darkModeOption = btn.querySelector('.dark-mode-option');
-    const lightModeOption = btn.querySelector('.light-mode-option');
-    
-    if (isDark) {
-        // Dark mode is active, show LIGHT option (sun + LIGHT text)
-        if (darkModeOption) darkModeOption.classList.remove('hidden');
-        if (lightModeOption) lightModeOption.classList.add('hidden');
-    } else {
-        // Light mode is active, show DARK option (moon + DARK text)
-        if (darkModeOption) darkModeOption.classList.add('hidden');
-        if (lightModeOption) lightModeOption.classList.remove('hidden');
-    }
-}
-
-function applyTheme(theme) {
-    if (theme === 'dark') {
-        document.body.classList.add('dark-mode');
-    } else {
-        document.body.classList.remove('dark-mode');
-    }
-
-    updateThemeButton();
-}
-
-function toggleTheme() {
-    const isDark = document.body.classList.contains('dark-mode');
-
-    const newTheme = isDark ? 'light' : 'dark';
-
-    localStorage.setItem('theme', newTheme);
-
-    applyTheme(newTheme);
-}
-
-applyTheme(localStorage.getItem('theme') || 'light');
-</script>
+    <script src="./theme.js"></script>
 </body>
 </html>
