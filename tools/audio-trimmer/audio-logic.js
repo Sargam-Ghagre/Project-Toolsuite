@@ -34,12 +34,12 @@ async function handleFileUpload(event) {
     document.getElementById('slider-ui').style.display = 'block';
     document.getElementById('controls-ui').style.display = 'flex';
     previewBtn.innerText = "▶ Preview Trim";
-    
+
     // Initialize Audio Context
     if (!audioContext) audioContext = new (window.AudioContext || window.webkitAudioContext)();
 
     const arrayBuffer = await file.arrayBuffer();
-    
+
     try {
         audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
         drawWaveform();
@@ -54,9 +54,9 @@ async function handleFileUpload(event) {
 function drawWaveform() {
     const width = canvas.width = canvas.offsetWidth;
     const height = canvas.height = canvas.offsetHeight;
-    
+
     // Get raw data from left channel (usually enough for visualization)
-    const rawData = audioBuffer.getChannelData(0); 
+    const rawData = audioBuffer.getChannelData(0);
     const step = Math.ceil(rawData.length / width);
     const amp = height / 2;
 
@@ -67,14 +67,14 @@ function drawWaveform() {
     for (let i = 0; i < width; i++) {
         let min = 1.0;
         let max = -1.0;
-        
+
         // Downsample for canvas width
         for (let j = 0; j < step; j++) {
             const datum = rawData[(i * step) + j];
             if (datum < min) min = datum;
             if (datum > max) max = datum;
         }
-        
+
         // Draw vertical bar for this pixel column
         ctx.fillRect(i, (1 + min) * amp, 1, Math.max(1, (max - min) * amp));
     }
@@ -124,7 +124,7 @@ function togglePreview() {
     const duration = audioBuffer.duration;
     const startVal = parseFloat(startSlider.value);
     const endVal = parseFloat(endSlider.value);
-    
+
     const startTime = (duration * startVal) / 100;
     const endTime = (duration * endVal) / 100;
     const playDuration = endTime - startTime;
@@ -132,7 +132,7 @@ function togglePreview() {
     sourceNode = audioContext.createBufferSource();
     sourceNode.buffer = audioBuffer;
     sourceNode.connect(audioContext.destination);
-    
+
     sourceNode.start(0, startTime, playDuration);
     isPlaying = true;
     previewBtn.innerText = "⏹ Stop Preview";
@@ -172,7 +172,7 @@ function downloadTrimmedAudio() {
 
     // 3. Encode to WAV (Native JS)
     const wavBlob = bufferToWave(trimmedBuffer, frameCount);
-    
+
     // 4. Trigger Download
     const url = URL.createObjectURL(wavBlob);
     const anchor = document.createElement('a');
@@ -212,22 +212,24 @@ function bufferToWave(abuffer, len) {
     setUint32(length - pos - 4);                   // chunk length
 
     // Interleave channels (LRLRLR...)
-    for(i = 0; i < abuffer.numberOfChannels; i++)
+    for (i = 0; i < abuffer.numberOfChannels; i++)
         channels.push(abuffer.getChannelData(i));
 
-    while(pos < len) {
-        for(i = 0; i < numOfChan; i++) {
+    let samplePos = 0;
+
+    while (samplePos < len) {
+        for (i = 0; i < numOfChan; i++) {
             // Clamp value between -1 and 1
-            sample = Math.max(-1, Math.min(1, channels[i][pos]));
+            sample = Math.max(-1, Math.min(1, channels[i][samplePos]));
             // Convert to 16-bit PCM
-            sample = (0.5 + sample < 0 ? sample * 32768 : sample * 32767)|0;
-            view.setInt16(44 + offset, sample, true); 
+            sample = (0.5 + sample < 0 ? sample * 32768 : sample * 32767) | 0;
+            view.setInt16(44 + offset, sample, true);
             offset += 2;
         }
-        pos++;
+        samplePos++;
     }
 
-    return new Blob([buffer], {type: "audio/wav"});
+    return new Blob([buffer], { type: "audio/wav" });
 
     function setUint16(data) {
         view.setUint16(pos, data, true);
